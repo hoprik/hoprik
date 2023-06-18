@@ -4,8 +4,8 @@ I`m hoprik, mini-developer. I create a z/paper engine and csgo case with my frie
 
 [![wakatime](https://wakatime.com/badge/user/dfcbe794-c409-4097-a53e-aedc2d8b21d6.svg)](https://wakatime.com/@Hoprik)
 
-- 🔭 I’m currently working on zedric chat
-- 🌱 I’m currently learning frontend and 
+- 🔭 I’m currently working on miro engine
+- 🌱 I’m currently learning java
 - 👯 I’m looking to collaborate on NBB
 - ⚡ Fun fact: I`m 14 years old
 - 💬 Ask me about Python, Java, Frontend, C#
