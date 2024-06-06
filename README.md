@@ -4,6 +4,10 @@ I`m hoprik, mini-developer. I create a z/paper engine and csgo case with my frie
 
 [![wakatime](https://wakatime.com/badge/user/dfcbe794-c409-4097-a53e-aedc2d8b21d6.svg)](https://wakatime.com/@Hoprik)
 
+[![stats](https://github-readme-stats.vercel.app/api/top-langs/?username=hoprik&theme=dark&layout=compact)]
+
+
+
 - 🔭 I’m currently working on stellar projects
 - 🌱 I’m currently learning java
 - 👯 I’m looking to collaborate on NBB
