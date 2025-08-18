@@ -3,7 +3,7 @@
 I`m hoprik, programmer
 
 [![wakatime](https://wakatime.com/badge/user/dfcbe794-c409-4097-a53e-aedc2d8b21d6.svg)](https://wakatime.com/@Hoprik)
-[![visotors](https://visitor-badge.laobi.icu/badge?page_id=hoprik.1)
+![visotors](https://visitor-badge.laobi.icu/badge?page_id=hoprik.1)
 ![nickname](https://mynickname.com/forum1t4/Hoprik.gif)
 
 ![stats](https://github-readme-stats.vercel.app/api/top-langs/?username=hoprik&theme=dark&layout=compact)
