@@ -276,16 +276,21 @@ def plot_dashboard(data_matrix, date_grid, start_date, stats):
     weeks = data_matrix.shape[0]
     days = data_matrix.shape[1]
 
-    fig = plt.figure(figsize=(16, 5))
+    # Немного увеличим высоту фигуры, чтобы все влезло без сжатия
+    fig = plt.figure(figsize=(16, 7))
 
     ax = plt.gca()
 
     # =========================================
-    # TRANSPARENT BACKGROUND
+    # WHITE BACKGROUND
     # =========================================
+    
+    fig.patch.set_facecolor("white")
+    fig.patch.set_alpha(1.0)
+    ax.set_facecolor("white")
 
-    fig.patch.set_alpha(0)
-    ax.set_facecolor("none")
+    # Делаем соотношение осей 1:1, чтобы ячейки были ровными квадратами
+    ax.set_aspect("equal")
 
     # =========================================
     # COLORS
@@ -462,7 +467,7 @@ def plot_dashboard(data_matrix, date_grid, start_date, stats):
     # STATS SECTIONS
     # =========================================
     
-    stats_y = days * (cell + gap) + 3.5
+    stats_y = days * (cell + gap) + 4.0
     
     draw_progress_section(
         ax,
@@ -502,7 +507,8 @@ def plot_dashboard(data_matrix, date_grid, start_date, stats):
 
     ax.set_xlim(-2, 138)
     
-    ax.set_ylim(bottom_y + 2, -3)
+    # Расширили лимиты по Y, чтобы ничего не обрезалось (было bottom_y + 2)
+    ax.set_ylim(bottom_y + 12, -3) 
     
     ax.axis("off")
     
@@ -512,8 +518,10 @@ def plot_dashboard(data_matrix, date_grid, start_date, stats):
         "coding_dashboard.png",
         dpi=220,
         bbox_inches="tight",
-        transparent=True,
+        transparent=False, # Убираем прозрачность
+        facecolor="white", # Принудительный белый фон
     )
+
 # =========================================================
 # MAIN
 # =========================================================
