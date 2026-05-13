@@ -1,301 +1,119 @@
 #!/usr/bin/env python3
+"""
+Generate a calendar heatmap from WakaTime daily totals.
+Requires WAKATIME_API_KEY environment variable.
+"""
 
 import os
 import sys
 from datetime import datetime, timedelta
+from collections import defaultdict
 
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+from matplotlib.colors import Normalize
 import requests
 
-# =========================================================
-# CONFIG
-# =========================================================
-
+# ------------------------------
+# Configuration
+# ------------------------------
 USER_ID = "dfcbe794-c409-4097-a53e-aedc2d8b21d6"
-
-INSIGHTS_URL = (
-    f"https://wakatime.com/api/v1/users/{USER_ID}/insights/days"
-)
-
-STATS_URL = (
-    f"https://wakatime.com/api/v1/users/{USER_ID}/stats/all_time?timeout=15"
-)
-
+API_URL = f"https://wakatime.com/api/v1/users/{USER_ID}/insights/days"
 HEADERS = {
-    "Accept": "application/json",
-    "User-Agent": "Mozilla/5.0",
+    "Accept": "application/json, text/javascript, */*; q=0.01",
+    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) Chrome/143.0.0.0",
 }
-
+# Optional: we add Authorization header only if key is present
 API_KEY = os.environ.get("WAKATIME_API_KEY")
-
 if not API_KEY:
-    print("❌ WAKATIME_API_KEY not set", file=sys.stderr)
+    print("❌ WAKATIME_API_KEY environment variable not set", file=sys.stderr)
     sys.exit(1)
 
-# =========================================================
-# FETCH
-# =========================================================
-
-def auth_headers():
+# ------------------------------
+# Fetch data from WakaTime
+# ------------------------------
+def fetch_data():
+    """Fetch daily totals for the last year."""
     headers = HEADERS.copy()
     headers["Authorization"] = f"Bearer {API_KEY}"
-    return headers
+    try:
+        resp = requests.get(API_URL, headers=headers, timeout=30)
+        resp.raise_for_status()
+        data = resp.json()
+        # if data.get("status") != "ok":
+        #     print("❌ API returned status != ok", file=sys.stderr)
+        #     sys.exit(1)
+        days = data["data"]["days"]
+        # Build dict date -> total seconds
+        total_by_date = {}
+        for day in days:
+            date_str = day["date"]
+            total_sec = day.get("total", 0.0)
+            total_by_date[date_str] = total_sec
+        return total_by_date
+    except Exception as e:
+        print(f"❌ Failed to fetch data: {e}", file=sys.stderr)
+        sys.exit(1)
 
-
-def fetch_activity():
-    resp = requests.get(
-        INSIGHTS_URL,
-        headers=auth_headers(),
-        timeout=30,
-    )
-
-    resp.raise_for_status()
-
-    data = resp.json()["data"]["days"]
-
-    totals = {}
-
-    for day in data:
-        totals[day["date"]] = day.get("total", 0)
-
-    return totals
-
-
-def fetch_stats():
-    resp = requests.get(
-        STATS_URL,
-        headers=auth_headers(),
-        timeout=30,
-    )
-
-    resp.raise_for_status()
-
-    return resp.json()["data"]
-
-# =========================================================
-# BUILD GRID
-# =========================================================
-
+# ------------------------------
+# Build calendar grid
+# ------------------------------
 def build_grid(total_by_date):
-
+    """Convert date→seconds into a weeks x days grid (Monday first)."""
+    # Determine date range (from first to last day in data)
     all_dates = sorted(total_by_date.keys())
-
+    if not all_dates:
+        print("❌ No data received", file=sys.stderr)
+        sys.exit(1)
     first_date = datetime.strptime(all_dates[0], "%Y-%m-%d")
     last_date = datetime.strptime(all_dates[-1], "%Y-%m-%d")
-
-    start = first_date - timedelta(days=first_date.weekday())
-
+    # Ensure we cover full weeks: start from Monday before or equal first_date
+    start = first_date - timedelta(days=(first_date.weekday() + 7) % 7)  # Monday
+    end = last_date
+    # Build a matrix: rows = weeks, cols = Mon..Sun
     weeks = []
-
     current = start
-
-    while current <= last_date:
-
+    while current <= end:
         week = []
-
         for _ in range(7):
-
             date_str = current.strftime("%Y-%m-%d")
-
-            sec = total_by_date.get(date_str, 0)
-
-            week.append(sec / 3600)
-
+            sec = total_by_date.get(date_str, 0.0)
+            hours = sec / 3600.0
+            week.append(hours)
             current += timedelta(days=1)
-
         weeks.append(week)
-
+    # Also store the date grid for annotations
     date_grid = []
-
     current = start
-
-    while current <= last_date:
-
-        row = []
-
+    while current <= end:
+        week_dates = []
         for _ in range(7):
-
-            row.append(current.strftime("%Y-%m-%d"))
-
+            week_dates.append(current.strftime("%Y-%m-%d"))
             current += timedelta(days=1)
-
-        date_grid.append(row)
-
+        date_grid.append(week_dates)
+    # Truncate to full weeks only (remove last incomplete week if it's empty)
+    while weeks and all(v == 0 for v in weeks[-1]) and all(d > last_date.strftime("%Y-%m-%d") for d in date_grid[-1]):
+        weeks.pop()
+        date_grid.pop()
     return np.array(weeks), date_grid, start
-
-# =========================================================
-# HELPERS
-# =========================================================
-
-def make_bar(percent, width=18):
-
-    filled = int(width * percent / 100)
-
-    return (
-        "█" * filled +
-        "░" * (width - filled)
-    )
-
-
-def draw_stats_text(ax, x, y, title, items):
-
-    ax.text(
-        x,
-        y,
-        title,
-        fontsize=13,
-        fontweight="bold",
-        color="#222",
-    )
-
-    y += 1.2
-
-    for item in items:
-
-        name = item["name"]
-
-        percent = item["percent"]
-
-        text = item.get("text", "")
-
-        bar = make_bar(percent)
-
-        line = (
-            f"{name:<14} "
-            f"{text:<10} "
-            f"{bar} "
-            f"{percent:>5.1f}%"
-        )
-
-        ax.text(
-            x,
-            y,
-            line,
-            fontsize=9,
-            family="monospace",
-            color="#444",
-        )
-
-        y += 0.8
-
-def draw_progress_section(
-    ax,
-    title,
-    items,
-    x,
-    y,
-    width=28,
-):
-
-    ax.text(
-        x,
-        y,
-        title,
-        fontsize=11,
-        fontweight="bold",
-        color="#222",
-    )
-
-    y += 1.0
-
-    for item in items:
-
-        name = item["name"]
-
-        percent = item["percent"]
-
-        hours = item.get("text", "")
-
-        # progress width
-        progress = int((percent / 100) * width)
-
-        # title row
-        ax.text(
-            x,
-            y,
-            name,
-            fontsize=9,
-            color="#333",
-            va="center",
-        )
-
-        ax.text(
-            x + width + 1,
-            y,
-            hours,
-            fontsize=9,
-            color="#666",
-            va="center",
-            ha="right",
-        )
-
-        # background bar
-        bg = mpatches.FancyBboxPatch(
-            (x, y + 0.35),
-            width,
-            0.32,
-            boxstyle="round,pad=0.02,rounding_size=0.08",
-            linewidth=0,
-            facecolor="#ebedf0",
-        )
-
-        ax.add_patch(bg)
-
-        # progress bar
-        fg = mpatches.FancyBboxPatch(
-            (x, y + 0.35),
-            progress,
-            0.32,
-            boxstyle="round,pad=0.02,rounding_size=0.08",
-            linewidth=0,
-            facecolor="#6f93b3",
-        )
-
-        ax.add_patch(fg)
-
-        # percent text
-        ax.text(
-            x + width + 3,
-            y,
-            f"{percent:.1f}%",
-            fontsize=8,
-            color="#444",
-            va="center",
-        )
-
-        y += 1.6
-
-# =========================================================
-# PLOT
-# =========================================================
-
-def plot_dashboard(data_matrix, date_grid, start_date, stats):
+# ------------------------------
+# Plotting
+# ------------------------------
+def plot_calendar(data_matrix, date_grid, start_date):
+    """Render GitHub-style calendar heatmap."""
 
     weeks = data_matrix.shape[0]
     days = data_matrix.shape[1]
 
-    # Немного увеличим высоту фигуры, чтобы все влезло без сжатия
-    fig = plt.figure(figsize=(16, 7))
+    fig_w = max(14, weeks * 0.22)
+    fig_h = 3.5
 
-    ax = plt.gca()
+    fig, ax = plt.subplots(figsize=(fig_w, fig_h))
+    fig.patch.set_facecolor("#ffffff")
+    ax.set_facecolor("#ffffff")
 
-    # =========================================
-    # WHITE BACKGROUND
-    # =========================================
-    
-    fig.patch.set_facecolor("white")
-    fig.patch.set_alpha(1.0)
-    ax.set_facecolor("white")
-
-    # Делаем соотношение осей 1:1, чтобы ячейки были ровными квадратами
-    ax.set_aspect("equal")
-
-    # =========================================
-    # COLORS
-    # =========================================
-
+    # GitHub-like palette
     colors = [
         "#ebedf0",
         "#c6d4e1",
@@ -308,7 +126,6 @@ def plot_dashboard(data_matrix, date_grid, start_date, stats):
     max_hours = max(data_matrix.flatten()) if data_matrix.size else 1
 
     def get_color(hours):
-
         if hours <= 0:
             return colors[0]
 
@@ -325,222 +142,135 @@ def plot_dashboard(data_matrix, date_grid, start_date, stats):
         else:
             return colors[5]
 
-    # =========================================
-    # HEADER
-    # =========================================
-
-    ax.text(
-        0,
-        -2.0,
-        "ACTIVITY LAST YEAR",
-        fontsize=18,
-        fontweight="bold",
-        color="#222",
-    )
-
-    # =========================================
-    # HEATMAP
-    # =========================================
-
-    cell = 1
+    cell_size = 1
     gap = 0.18
 
+    # Draw cells
     for week in range(weeks):
-
         for day in range(days):
 
-            value = data_matrix[week, day]
+            hours = data_matrix[week, day]
 
-            x = week * (cell + gap)
-
-            y = day * (cell + gap)
+            x = week * (cell_size + gap)
+            y = day * (cell_size + gap)
 
             rect = mpatches.FancyBboxPatch(
                 (x, y),
-                cell,
-                cell,
+                cell_size,
+                cell_size,
                 boxstyle="round,pad=0.02,rounding_size=0.12",
                 linewidth=0,
-                facecolor=get_color(value),
+                facecolor=get_color(hours),
             )
 
             ax.add_patch(rect)
 
-    # =========================================
-    # DAY LABELS
-    # =========================================
-
-    labels = ["Mon", "", "Wed", "", "Fri", "", ""]
-
-    for i, label in enumerate(labels):
-
+    # Day labels
+    day_labels = ["Mon", "", "Wed", "", "Fri", "", ""]
+    for i, label in enumerate(day_labels):
         if label:
-
             ax.text(
-                -1.4,
-                i * (cell + gap) + 0.5,
+                -1.5,
+                i * (cell_size + gap) + 0.5,
                 label,
                 ha="right",
                 va="center",
-                fontsize=9,
-                color="#666",
+                fontsize=10,
+                color="#555",
             )
 
-    # =========================================
-    # MONTH LABELS
-    # =========================================
-
+    # Month labels
     prev_month = None
 
     for week_idx, week_dates in enumerate(date_grid):
 
-        dt = datetime.strptime(
-            week_dates[0],
-            "%Y-%m-%d",
-        )
+        first_day = datetime.strptime(week_dates[0], "%Y-%m-%d")
 
-        if dt.month != prev_month:
+        if first_day.month != prev_month:
+            prev_month = first_day.month
 
-            prev_month = dt.month
+            x = week_idx * (cell_size + gap)
 
             ax.text(
-                week_idx * (cell + gap),
-                -0.6,
-                dt.strftime("%b"),
-                fontsize=9,
-                color="#444",
+                x,
+                -1.0,
+                first_day.strftime("%b"),
+                fontsize=10,
+                color="#333",
+                ha="left",
+                va="center",
             )
 
-    # =========================================
-    # LEGEND
-    # =========================================
+    # Title
+    ax.text(
+        0,
+        -2.2,
+        "ACTIVITY LAST YEAR",
+        fontsize=14,
+        fontweight="bold",
+        color="#333",
+        ha="left",
+    )
 
-    legend_x = weeks * (cell + gap) - 8
-
-    legend_y = days * (cell + gap) + 0.7
+    # Legend
+    legend_x = weeks * (cell_size + gap) - 8
 
     ax.text(
         legend_x - 1.5,
-        legend_y + 0.25,
+        days * (cell_size + gap) + 0.3,
         "Less",
-        fontsize=8,
-        color="#666",
+        fontsize=9,
+        color="#555",
+        va="center",
     )
 
-    for i, color in enumerate(colors):
-
+    for i, c in enumerate(colors):
         rect = mpatches.FancyBboxPatch(
-            (legend_x + i * 1.1, legend_y),
-            0.8,
-            0.8,
+            (
+                legend_x + i * 1.2,
+                days * (cell_size + gap),
+            ),
+            0.9,
+            0.9,
             boxstyle="round,pad=0.02,rounding_size=0.08",
             linewidth=0,
-            facecolor=color,
+            facecolor=c,
         )
-
         ax.add_patch(rect)
 
     ax.text(
-        legend_x + len(colors) * 1.1 + 0.3,
-        legend_y + 0.25,
+        legend_x + len(colors) * 1.2 + 0.3,
+        days * (cell_size + gap) + 0.3,
         "More",
-        fontsize=8,
-        color="#666",
+        fontsize=9,
+        color="#555",
+        va="center",
     )
 
-    # =========================================
-    # BOTTOM STATS
-    # =========================================
+    # Layout
+    ax.set_xlim(-2, weeks * (cell_size + gap))
+    ax.set_ylim(days * (cell_size + gap) + 2, -3)
 
-    bottom_y = days * (cell + gap) + 2.5
-
-    total_time = stats["human_readable_total"]
-    ax.text(
-        0,
-        bottom_y,
-        f"Total Coding Time: {total_time}",
-        fontsize=10,
-        color="#444",
-    )
-
-    # =========================================
-    # STATS SECTIONS
-    # =========================================
-    
-    stats_y = days * (cell + gap) + 4.0
-    
-    draw_progress_section(
-        ax,
-        "Languages",
-        stats["languages"][:4],
-        x=0,
-        y=stats_y,
-    )
-    
-    draw_progress_section(
-        ax,
-        "Editors",
-        stats["editors"][:4],
-        x=35,
-        y=stats_y,
-    )
-    
-    draw_progress_section(
-        ax,
-        "Operating Systems",
-        stats["operating_systems"][:4],
-        x=70,
-        y=stats_y,
-    )
-    
-    draw_progress_section(
-        ax,
-        "Categories",
-        stats["categories"][:4],
-        x=105,
-        y=stats_y,
-    )
-
-    # =========================================
-    # FINALIZE
-    # =========================================
-
-    ax.set_xlim(-2, 138)
-    
-    # Расширили лимиты по Y, чтобы ничего не обрезалось (было bottom_y + 2)
-    ax.set_ylim(bottom_y + 12, -3) 
-    
+    ax.set_aspect("equal")
     ax.axis("off")
-    
+
     plt.tight_layout()
-    
     plt.savefig(
         "coding_dashboard.png",
-        dpi=220,
+        dpi=200,
         bbox_inches="tight",
-        transparent=False, # Убираем прозрачность
-        facecolor="white", # Принудительный белый фон
+        facecolor=fig.get_facecolor(),
     )
 
-# =========================================================
-# MAIN
-# =========================================================
+    print("✅ Saved coding_dashboard.png")
 
+# ------------------------------
+# Main
+# ------------------------------
 def main():
-
-    totals = fetch_activity()
-
-    stats = fetch_stats()
-
-    matrix, date_grid, start = build_grid(totals)
-
-    plot_dashboard(
-        matrix,
-        date_grid,
-        start,
-        stats,
-    )
-
+    total_by_date = fetch_data()
+    data_matrix, date_grid, start_date = build_grid(total_by_date)
+    plot_calendar(data_matrix, date_grid, start_date)
 
 if __name__ == "__main__":
     main()
