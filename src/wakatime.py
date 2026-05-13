@@ -180,6 +180,47 @@ def draw_stats_text(ax, x, y, title, items):
 
         y += 0.8
 
+def draw_stats_text(ax, x, y, title, items):
+
+    ax.text(
+        x,
+        y,
+        title,
+        fontsize=13,
+        fontweight="bold",
+        color="#222",
+    )
+
+    y += 1.2
+
+    for item in items:
+
+        name = item["name"]
+
+        percent = item["percent"]
+
+        text = item.get("text", "")
+
+        bar = make_bar(percent)
+
+        line = (
+            f"{name:<14} "
+            f"{text:<10} "
+            f"{bar} "
+            f"{percent:>5.1f}%"
+        )
+
+        ax.text(
+            x,
+            y,
+            line,
+            fontsize=9,
+            family="monospace",
+            color="#444",
+        )
+
+        y += 0.8
+
 # =========================================================
 # PLOT
 # =========================================================
@@ -189,16 +230,20 @@ def plot_dashboard(data_matrix, date_grid, start_date, stats):
     weeks = data_matrix.shape[0]
     days = data_matrix.shape[1]
 
-    fig = plt.figure(figsize=(18, 8))
+    fig = plt.figure(figsize=(16, 5))
 
     ax = plt.gca()
 
-    fig.patch.set_facecolor("#ffffff")
-    ax.set_facecolor("#ffffff")
+    # =========================================
+    # TRANSPARENT BACKGROUND
+    # =========================================
 
-    # -----------------------------------------------------
+    fig.patch.set_alpha(0)
+    ax.set_facecolor("none")
+
+    # =========================================
     # COLORS
-    # -----------------------------------------------------
+    # =========================================
 
     colors = [
         "#ebedf0",
@@ -229,38 +274,22 @@ def plot_dashboard(data_matrix, date_grid, start_date, stats):
         else:
             return colors[5]
 
-    # -----------------------------------------------------
+    # =========================================
     # HEADER
-    # -----------------------------------------------------
+    # =========================================
 
     ax.text(
         0,
-        -3,
-        "WAKATIME DASHBOARD",
-        fontsize=22,
+        -2.0,
+        "ACTIVITY LAST YEAR",
+        fontsize=18,
         fontweight="bold",
         color="#222",
     )
 
-    ax.text(
-        0,
-        -1.8,
-        f"Total Coding Time: {stats['human_readable_total']}",
-        fontsize=11,
-        color="#555",
-    )
-
-    ax.text(
-        0,
-        -0.8,
-        f"Daily Average: {stats['daily_average']}",
-        fontsize=11,
-        color="#555",
-    )
-
-    # -----------------------------------------------------
+    # =========================================
     # HEATMAP
-    # -----------------------------------------------------
+    # =========================================
 
     cell = 1
     gap = 0.18
@@ -286,9 +315,9 @@ def plot_dashboard(data_matrix, date_grid, start_date, stats):
 
             ax.add_patch(rect)
 
-    # -----------------------------------------------------
-    # DAYS
-    # -----------------------------------------------------
+    # =========================================
+    # DAY LABELS
+    # =========================================
 
     labels = ["Mon", "", "Wed", "", "Fri", "", ""]
 
@@ -297,7 +326,7 @@ def plot_dashboard(data_matrix, date_grid, start_date, stats):
         if label:
 
             ax.text(
-                -1.3,
+                -1.4,
                 i * (cell + gap) + 0.5,
                 label,
                 ha="right",
@@ -306,9 +335,9 @@ def plot_dashboard(data_matrix, date_grid, start_date, stats):
                 color="#666",
             )
 
-    # -----------------------------------------------------
-    # MONTHS
-    # -----------------------------------------------------
+    # =========================================
+    # MONTH LABELS
+    # =========================================
 
     prev_month = None
 
@@ -331,24 +360,26 @@ def plot_dashboard(data_matrix, date_grid, start_date, stats):
                 color="#444",
             )
 
-    # -----------------------------------------------------
+    # =========================================
     # LEGEND
-    # -----------------------------------------------------
+    # =========================================
 
-    legend_x = weeks * (cell + gap) - 7
+    legend_x = weeks * (cell + gap) - 8
+
+    legend_y = days * (cell + gap) + 0.7
 
     ax.text(
         legend_x - 1.5,
-        8.7,
+        legend_y + 0.25,
         "Less",
         fontsize=8,
-        color="#555",
+        color="#666",
     )
 
     for i, color in enumerate(colors):
 
         rect = mpatches.FancyBboxPatch(
-            (legend_x + i * 1.1, 8.3),
+            (legend_x + i * 1.1, legend_y),
             0.8,
             0.8,
             boxstyle="round,pad=0.02,rounding_size=0.08",
@@ -359,72 +390,95 @@ def plot_dashboard(data_matrix, date_grid, start_date, stats):
         ax.add_patch(rect)
 
     ax.text(
-        legend_x + len(colors) * 1.1 + 0.2,
-        8.7,
+        legend_x + len(colors) * 1.1 + 0.3,
+        legend_y + 0.25,
         "More",
         fontsize=8,
-        color="#555",
+        color="#666",
     )
 
-    # -----------------------------------------------------
-    # SIDE STATS
-    # -----------------------------------------------------
+    # =========================================
+    # BOTTOM STATS
+    # =========================================
 
-    stats_x = weeks * (cell + gap) + 4
+    bottom_y = days * (cell + gap) + 2.5
 
-    draw_stats_text(
-        ax,
-        stats_x,
+    total_time = stats["human_readable_total"]
+
+    best_day = stats["best_day"]["text"]
+
+    ax.text(
         0,
-        "Languages",
-        stats["languages"][:6],
+        bottom_y,
+        f"Total Coding Time: {total_time}",
+        fontsize=10,
+        color="#444",
     )
 
-    draw_stats_text(
+    ax.text(
+        0,
+        bottom_y + 1.0,
+        f"Best Day: {best_day}",
+        fontsize=10,
+        color="#444",
+    )
+
+    # =========================================
+    # STATS SECTIONS
+    # =========================================
+    
+    stats_y = days * (cell + gap) + 3.5
+    
+    draw_progress_section(
         ax,
-        stats_x,
-        8,
+        "Languages",
+        stats["languages"][:4],
+        x=0,
+        y=stats_y,
+    )
+    
+    draw_progress_section(
+        ax,
         "Editors",
         stats["editors"][:4],
+        x=35,
+        y=stats_y,
     )
-
-    draw_stats_text(
+    
+    draw_progress_section(
         ax,
-        stats_x,
-        14,
         "Operating Systems",
         stats["operating_systems"][:4],
+        x=70,
+        y=stats_y,
     )
-
-    draw_stats_text(
+    
+    draw_progress_section(
         ax,
-        stats_x,
-        20,
         "Categories",
         stats["categories"][:4],
+        x=105,
+        y=stats_y,
     )
 
-    # -----------------------------------------------------
+    # =========================================
     # FINALIZE
-    # -----------------------------------------------------
+    # =========================================
 
-    ax.set_xlim(-2, stats_x + 28)
-
-    ax.set_ylim(28, -4)
-
+    ax.set_xlim(-2, 138)
+    
+    ax.set_ylim(bottom_y + 2, -3)
+    
     ax.axis("off")
-
+    
     plt.tight_layout()
-
+    
     plt.savefig(
         "coding_dashboard.png",
         dpi=220,
         bbox_inches="tight",
-        facecolor=fig.get_facecolor(),
+        transparent=True,
     )
-
-    print("✅ Saved coding_dashboard.png")
-
 # =========================================================
 # MAIN
 # =========================================================
