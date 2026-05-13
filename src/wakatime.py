@@ -41,9 +41,9 @@ def fetch_data():
         resp = requests.get(API_URL, headers=headers, timeout=30)
         resp.raise_for_status()
         data = resp.json()
-        if data.get("status") != "ok":
-            print("❌ API returned status != ok", file=sys.stderr)
-            sys.exit(1)
+        # if data.get("status") != "ok":
+        #     print("❌ API returned status != ok", file=sys.stderr)
+        #     sys.exit(1)
         days = data["data"]["days"]
         # Build dict date -> total seconds
         total_by_date = {}
