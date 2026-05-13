@@ -6,7 +6,7 @@ I`m hoprik, programmer
 ![visotors](https://visitor-badge.laobi.icu/badge?page_id=hoprik.1)
 ![nickname](https://mynickname.com/forum1t4/Hoprik.gif)
 
-![stats](https://github-readme-stats.vercel.app/api/top-langs/?username=hoprik&theme=dark&layout=compact)
+![stats](https://github.com/hoprik/hoprik/blob/main/coding_dashboard.png)
 ![sdvg](https://github.com/hoprik/hoprik/blob/main/video-bez-nazvaniia-sdelano-v-clipchamp-1-min_VzTaPw7F.gif?raw=true)
 
 My socails: [![discord](https://img.icons8.com/nolan/12/1A6DFF/C822FF/discord-logo.png) DISCORD](https://discordapp.com/users/678545337136447501/), [![discord](https://img.icons8.com/nolan/12/1A6DFF/C822FF/telegram-app.png) TELEGRAMM](https://t.me/hoprik),  [![steam](https://img.icons8.com/nolan/12/1A6DFF/C822FF/steam--v1.png) STEAM](https://steamcommunity.com/id/hoprik/)
