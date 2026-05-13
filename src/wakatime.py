@@ -97,64 +97,171 @@ def build_grid(total_by_date):
         weeks.pop()
         date_grid.pop()
     return np.array(weeks), date_grid, start
-
 # ------------------------------
 # Plotting
 # ------------------------------
 def plot_calendar(data_matrix, date_grid, start_date):
-    """Create and save the calendar heatmap."""
-    weeks, days = data_matrix.shape
-    fig, ax = plt.subplots(figsize=(12, weeks * 0.25 + 2))  # dynamic height
-    # Use a green colormap, white for zero
-    cmap = plt.cm.YlGn
-    cmap.set_bad(color='white')
-    norm = Normalize(vmin=0, vmax=12)  # up to 12 hours per day (adjust as needed)
-    im = ax.imshow(data_matrix, cmap=cmap, norm=norm, aspect='auto', interpolation='nearest')
+    """Render GitHub-style calendar heatmap."""
 
-    # Colorbar
-    cbar = fig.colorbar(im, ax=ax, shrink=0.8)
-    cbar.set_label('Hours coded', rotation=270, labelpad=15)
+    weeks = data_matrix.shape[0]
+    days = data_matrix.shape[1]
 
-    # Add grid lines
-    ax.set_xticks(np.arange(days) - 0.5, minor=True)
-    ax.set_yticks(np.arange(weeks) - 0.5, minor=True)
-    ax.grid(which='minor', color='gray', linestyle='-', linewidth=0.5)
+    fig_w = max(14, weeks * 0.22)
+    fig_h = 3.5
 
-    # Labels for days of week
-    day_names = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-    ax.set_xticks(np.arange(days))
-    ax.set_xticklabels(day_names)
-    ax.tick_params(axis='x', labeltop=True, labelbottom=False)  # put days on top
+    fig, ax = plt.subplots(figsize=(fig_w, fig_h))
+    fig.patch.set_facecolor("#ffffff")
+    ax.set_facecolor("#ffffff")
 
-    # Month labels: iterate over weeks and mark first occurrence of a new month
-    month_positions = []
-    month_labels = []
-    last_month = None
-    for i, week_dates in enumerate(date_grid):
-        for j, date_str in enumerate(week_dates):
-            if date_str == "": continue
-            d = datetime.strptime(date_str, "%Y-%m-%d")
-            if d.month != last_month:
-                last_month = d.month
-                month_positions.append((i, j))
-                month_labels.append(d.strftime("%b"))
-    # Draw month markers above the top
-    for (i, j), label in zip(month_positions, month_labels):
-        ax.text(j, -0.3, label, ha='center', va='bottom', fontsize=8, weight='bold')
-    ax.set_ylim(weeks - 0.5, -0.5)  # invert so week 1 is on top
+    # GitHub-like palette
+    colors = [
+        "#ebedf0",
+        "#c6d4e1",
+        "#9fbad0",
+        "#6f93b3",
+        "#436b8e",
+        "#1f1f1f",
+    ]
 
-    # Annotate each cell with hours (if cell width permits)
-    for i in range(weeks):
-        for j in range(days):
-            hours = data_matrix[i, j]
-            if hours > 0.01:
-                # Decide whether to show text based on cell size
-                ax.text(j, i, f"{hours:.1f}", ha='center', va='center', fontsize=6, color='black')
+    max_hours = max(data_matrix.flatten()) if data_matrix.size else 1
 
-    ax.set_title(f"WakaTime Coding Activity (last year: {start_date.strftime('%b %d, %Y')} – today)")
-    ax.set_ylabel("Week number")
+    def get_color(hours):
+        if hours <= 0:
+            return colors[0]
+
+        ratio = hours / max_hours
+
+        if ratio < 0.2:
+            return colors[1]
+        elif ratio < 0.4:
+            return colors[2]
+        elif ratio < 0.6:
+            return colors[3]
+        elif ratio < 0.8:
+            return colors[4]
+        else:
+            return colors[5]
+
+    cell_size = 1
+    gap = 0.18
+
+    # Draw cells
+    for week in range(weeks):
+        for day in range(days):
+
+            hours = data_matrix[week, day]
+
+            x = week * (cell_size + gap)
+            y = day * (cell_size + gap)
+
+            rect = mpatches.FancyBboxPatch(
+                (x, y),
+                cell_size,
+                cell_size,
+                boxstyle="round,pad=0.02,rounding_size=0.12",
+                linewidth=0,
+                facecolor=get_color(hours),
+            )
+
+            ax.add_patch(rect)
+
+    # Day labels
+    day_labels = ["Mon", "", "Wed", "", "Fri", "", ""]
+    for i, label in enumerate(day_labels):
+        if label:
+            ax.text(
+                -1.5,
+                i * (cell_size + gap) + 0.5,
+                label,
+                ha="right",
+                va="center",
+                fontsize=10,
+                color="#555",
+            )
+
+    # Month labels
+    prev_month = None
+
+    for week_idx, week_dates in enumerate(date_grid):
+
+        first_day = datetime.strptime(week_dates[0], "%Y-%m-%d")
+
+        if first_day.month != prev_month:
+            prev_month = first_day.month
+
+            x = week_idx * (cell_size + gap)
+
+            ax.text(
+                x,
+                -1.0,
+                first_day.strftime("%b"),
+                fontsize=10,
+                color="#333",
+                ha="left",
+                va="center",
+            )
+
+    # Title
+    ax.text(
+        0,
+        -2.2,
+        "ACTIVITY LAST YEAR",
+        fontsize=14,
+        fontweight="bold",
+        color="#333",
+        ha="left",
+    )
+
+    # Legend
+    legend_x = weeks * (cell_size + gap) - 8
+
+    ax.text(
+        legend_x - 1.5,
+        days * (cell_size + gap) + 0.3,
+        "Less",
+        fontsize=9,
+        color="#555",
+        va="center",
+    )
+
+    for i, c in enumerate(colors):
+        rect = mpatches.FancyBboxPatch(
+            (
+                legend_x + i * 1.2,
+                days * (cell_size + gap),
+            ),
+            0.9,
+            0.9,
+            boxstyle="round,pad=0.02,rounding_size=0.08",
+            linewidth=0,
+            facecolor=c,
+        )
+        ax.add_patch(rect)
+
+    ax.text(
+        legend_x + len(colors) * 1.2 + 0.3,
+        days * (cell_size + gap) + 0.3,
+        "More",
+        fontsize=9,
+        color="#555",
+        va="center",
+    )
+
+    # Layout
+    ax.set_xlim(-2, weeks * (cell_size + gap))
+    ax.set_ylim(days * (cell_size + gap) + 2, -3)
+
+    ax.set_aspect("equal")
+    ax.axis("off")
+
     plt.tight_layout()
-    plt.savefig("coding_calendar.png", dpi=150, bbox_inches='tight')
+    plt.savefig(
+        "coding_calendar.png",
+        dpi=200,
+        bbox_inches="tight",
+        facecolor=fig.get_facecolor(),
+    )
+
     print("✅ Saved coding_calendar.png")
 
 # ------------------------------
