@@ -404,21 +404,10 @@ def plot_dashboard(data_matrix, date_grid, start_date, stats):
     bottom_y = days * (cell + gap) + 2.5
 
     total_time = stats["human_readable_total"]
-
-    best_day = stats["best_day"]["text"]
-
     ax.text(
         0,
         bottom_y,
         f"Total Coding Time: {total_time}",
-        fontsize=10,
-        color="#444",
-    )
-
-    ax.text(
-        0,
-        bottom_y + 1.0,
-        f"Best Day: {best_day}",
         fontsize=10,
         color="#444",
     )
