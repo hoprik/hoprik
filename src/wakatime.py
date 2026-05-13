@@ -180,18 +180,25 @@ def draw_stats_text(ax, x, y, title, items):
 
         y += 0.8
 
-def draw_stats_text(ax, x, y, title, items):
+def draw_progress_section(
+    ax,
+    title,
+    items,
+    x,
+    y,
+    width=28,
+):
 
     ax.text(
         x,
         y,
         title,
-        fontsize=13,
+        fontsize=11,
         fontweight="bold",
         color="#222",
     )
 
-    y += 1.2
+    y += 1.0
 
     for item in items:
 
@@ -199,27 +206,66 @@ def draw_stats_text(ax, x, y, title, items):
 
         percent = item["percent"]
 
-        text = item.get("text", "")
+        hours = item.get("text", "")
 
-        bar = make_bar(percent)
+        # progress width
+        progress = int((percent / 100) * width)
 
-        line = (
-            f"{name:<14} "
-            f"{text:<10} "
-            f"{bar} "
-            f"{percent:>5.1f}%"
-        )
-
+        # title row
         ax.text(
             x,
             y,
-            line,
+            name,
             fontsize=9,
-            family="monospace",
-            color="#444",
+            color="#333",
+            va="center",
         )
 
-        y += 0.8
+        ax.text(
+            x + width + 1,
+            y,
+            hours,
+            fontsize=9,
+            color="#666",
+            va="center",
+            ha="right",
+        )
+
+        # background bar
+        bg = mpatches.FancyBboxPatch(
+            (x, y + 0.35),
+            width,
+            0.32,
+            boxstyle="round,pad=0.02,rounding_size=0.08",
+            linewidth=0,
+            facecolor="#ebedf0",
+        )
+
+        ax.add_patch(bg)
+
+        # progress bar
+        fg = mpatches.FancyBboxPatch(
+            (x, y + 0.35),
+            progress,
+            0.32,
+            boxstyle="round,pad=0.02,rounding_size=0.08",
+            linewidth=0,
+            facecolor="#6f93b3",
+        )
+
+        ax.add_patch(fg)
+
+        # percent text
+        ax.text(
+            x + width + 3,
+            y,
+            f"{percent:.1f}%",
+            fontsize=8,
+            color="#444",
+            va="center",
+        )
+
+        y += 1.6
 
 # =========================================================
 # PLOT
