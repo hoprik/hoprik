@@ -19,7 +19,7 @@ import requests
 # Configuration
 # ------------------------------
 USER_ID = "dfcbe794-c409-4097-a53e-aedc2d8b21d6"
-API_URL = f"https://wakatime.com/api/v1/users/{USER_ID}/insights/days"
+API_URL = f"https://wakatime.com/api/v1/users/{USER_ID}/insights/days/public"
 HEADERS = {
     "Accept": "application/json, text/javascript, */*; q=0.01",
     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) Chrome/143.0.0.0",
