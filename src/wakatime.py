@@ -181,7 +181,7 @@ def plot_calendar(data_matrix, date_grid, start_date):
 
     # Month labels
     prev_month = None
-    month_names_ru = ["Янв", "фев", "Мар", "Апр", "Май", "Июн",
+    month_names_ru = ["Янв", "Фев", "Мар", "Апр", "Май", "Июн",
                       "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"]
 
     for week_idx, week_dates in enumerate(date_grid):
