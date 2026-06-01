@@ -166,7 +166,7 @@ def plot_calendar(data_matrix, date_grid, start_date):
             ax.add_patch(rect)
 
     # Day labels
-    day_labels = ["Mon", "", "Wed", "", "Fri", "", ""]
+    day_labels = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
     for i, label in enumerate(day_labels):
         if label:
             ax.text(
@@ -181,6 +181,8 @@ def plot_calendar(data_matrix, date_grid, start_date):
 
     # Month labels
     prev_month = None
+    month_names_ru = ["янв", "фев", "мар", "апр", "май", "июн",
+                      "июл", "авг", "сен", "окт", "ноя", "дек"]
 
     for week_idx, week_dates in enumerate(date_grid):
 
@@ -194,13 +196,12 @@ def plot_calendar(data_matrix, date_grid, start_date):
             ax.text(
                 x,
                 -1.0,
-                first_day.strftime("%b"),
+                month_names_ru[first_day.month - 1],
                 fontsize=10,
                 color="#333",
                 ha="left",
                 va="center",
             )
-
     # Title
     ax.text(
         0,
@@ -216,7 +217,7 @@ def plot_calendar(data_matrix, date_grid, start_date):
     legend_x = weeks * (cell_size + gap) - 8
 
     ax.text(
-        legend_x - 1.5,
+        legend_x - 1.7,
         days * (cell_size + gap) + 0.3,
         "Мало",
         fontsize=9,
