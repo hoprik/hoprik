@@ -60,15 +60,16 @@ def replace_text_between(original_text, marker, replacement_text):
 
 def parse_issue(title):
     """Parse issue title and return a tuple with (action, <move>)"""
-    if title.lower() == 'Chess: start new game':
+    title_lower = title.lower()
+    if title_lower == 'chess: start new game':
         return (Action.NEW_GAME, None)
 
-    if 'Chess: move' in title.lower():
-        match_obj = re.match('Chess: Move ([A-H][1-8]) to ([A-H][1-8])', title, re.I)
-
-        source = match_obj.group(1)
-        dest   = match_obj.group(2)
-        return (Action.MOVE, (source + dest).lower())
+    if 'chess: move' in title_lower:
+        match_obj = re.match(r'Chess: Move ([A-H][1-8]) to ([A-H][1-8])', title, re.I)
+        if match_obj:
+            source = match_obj.group(1)
+            dest   = match_obj.group(2)
+            return (Action.MOVE, (source + dest).lower())
 
     return (Action.UNKNOWN, None)
 
