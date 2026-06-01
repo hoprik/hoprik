@@ -205,7 +205,7 @@ def plot_calendar(data_matrix, date_grid, start_date):
     ax.text(
         0,
         -2.2,
-        "ACTIVITY LAST YEAR",
+        "АКТИВНОСТЬ ЗА ПОСЛЕДНИЙ ГОД",
         fontsize=14,
         fontweight="bold",
         color="#333",
@@ -218,7 +218,7 @@ def plot_calendar(data_matrix, date_grid, start_date):
     ax.text(
         legend_x - 1.5,
         days * (cell_size + gap) + 0.3,
-        "Less",
+        "Мало",
         fontsize=9,
         color="#555",
         va="center",
@@ -241,7 +241,7 @@ def plot_calendar(data_matrix, date_grid, start_date):
     ax.text(
         legend_x + len(colors) * 1.2 + 0.3,
         days * (cell_size + gap) + 0.3,
-        "More",
+        "Много",
         fontsize=9,
         color="#555",
         va="center",
