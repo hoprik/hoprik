@@ -60,10 +60,10 @@ def replace_text_between(original_text, marker, replacement_text):
 
 def parse_issue(title):
     """Parse issue title and return a tuple with (action, <move>)"""
-    if title.lower() == 'chess: start new game':
+    if title.lower() == 'Chess: start new game':
         return (Action.NEW_GAME, None)
 
-    if 'chess: move' in title.lower():
+    if 'Chess: move' in title.lower():
         match_obj = re.match('Chess: Move ([A-H][1-8]) to ([A-H][1-8])', title, re.I)
 
         source = match_obj.group(1)
@@ -84,24 +84,24 @@ def main(issue, issue_author, repo_owner):
         if os.path.exists('games/current.pgn') and issue_author != repo_owner:
             issue.create_comment(settings['comments']['invalid_new_game'].format(author=issue_author))
             issue.edit(state='closed')
-            return False, 'ERROR: A current game is in progress. Only the repo owner can start a new game'
+            return False, 'ОШИБКА: Игра уже идёт, чувак. Только хозяин репозитория может начать новую (потому что он тут главный)'
 
         issue.create_comment(settings['comments']['successful_new_game'].format(author=issue_author))
         issue.edit(state='closed')
 
         with open('data/last_moves.txt', 'w') as last_moves:
-            last_moves.write('Start game: ' + issue_author)
+            last_moves.write('Погнали партию: ' + issue_author)
 
         # Create new game
         game = chess.pgn.Game()
-        game.headers['Event'] = repo_owner + '\'s Online Open Chess Tournament'
+        game.headers['Event'] = repo_owner + ' онлайн-шахматный турнир без правил'
         game.headers['Site'] = 'https://github.com/' + os.environ['GITHUB_REPOSITORY']
         game.headers['Date'] = datetime.now().strftime('%Y.%m.%d')
         game.headers['Round'] = '1'
 
     elif action[0] == Action.MOVE:
         if not os.path.exists('games/current.pgn'):
-            return False, 'ERROR: There is no game in progress! Start a new game first'
+            return False, 'ОШИБКА: Нет активной игры! Начни новую, ленивец'
 
         # Load game from "games/current.pgn"
         with open('games/current.pgn') as pgn_file:
@@ -118,8 +118,8 @@ def main(issue, issue_author, repo_owner):
 
         if action[1][:2] == action[1][2:]:
             issue.create_comment(settings['comments']['invalid_move'].format(author=issue_author, move=action[1]))
-            issue.edit(state='closed', labels=['Invalid'])
-            return False, 'ERROR: Move is invalid!'
+            issue.edit(state='closed', labels=['Неверно'])
+            return False, 'ОШИБКА: Ход невалидный! (ты чё, шахматы первый раз видишь?)'
 
         # Try to move with promotion to queen
         if chess.Move.from_uci(action[1] + 'q') in gameboard.legal_moves:
@@ -128,25 +128,25 @@ def main(issue, issue_author, repo_owner):
         move = chess.Move.from_uci(action[1])
 
         # Check if player is moving twice in a row
-        if last_player == issue_author and 'Start game' not in last_move:
+        if last_player == issue_author and 'Погнали партию:' not in last_move:
             issue.create_comment(settings['comments']['consecutive_moves'].format(author=issue_author))
-            issue.edit(state='closed', labels=['Invalid'])
-            return False, 'ERROR: Two moves in a row!'
+            issue.edit(state='closed', labels=['Неверно'])
+            return False, 'ОШИБКА: Два хода подряд! Так нечестно, жди своей очереди'
 
         # Check if move is valid
         if move not in gameboard.legal_moves:
             issue.create_comment(settings['comments']['invalid_move'].format(author=issue_author, move=action[1]))
-            issue.edit(state='closed', labels=['Invalid'])
-            return False, 'ERROR: Move is invalid!'
+            issue.edit(state='closed', labels=['Неверно'])
+            return False, 'ОШИБКА: Ход невалидный! (ты чё, шахматы первый раз видишь?)'
 
         # Check if board is valid
         if not gameboard.is_valid():
             issue.create_comment(settings['comments']['invalid_board'].format(author=issue_author))
-            issue.edit(state='closed', labels=['Invalid'])
-            return False, 'ERROR: Board is invalid!'
+            issue.edit(state='closed', labels=['Неверно'])
+            return False, 'ОШИБКА: Доска сломалась! (или фигуры не туда пошли)'
 
-        issue_labels = ['⚔️ Capture!'] if gameboard.is_capture(move) else []
-        issue_labels += ['White' if gameboard.turn == chess.WHITE else 'Black']
+        issue_labels = ['⚔️ Взятие!'] if gameboard.is_capture(move) else []
+        issue_labels += ['Белые' if gameboard.turn == chess.WHITE else 'Черные']
 
         issue.create_comment(settings['comments']['successful_move'].format(author=issue_author, move=action[1]))
         issue.edit(state='closed', labels=issue_labels)
@@ -161,8 +161,8 @@ def main(issue, issue_author, repo_owner):
 
     elif action[0] == Action.UNKNOWN:
         issue.create_comment(settings['comments']['unknown_command'].format(author=issue_author))
-        issue.edit(state='closed', labels=['Invalid'])
-        return False, 'ERROR: Unknown action'
+        issue.edit(state='closed', labels=['Неверно'])
+        return False, 'ОШИБКА: Непонятная команда. Ты вообще по делу?'
 
     # Save game to "games/current.pgn"
     print(game, file=open('games/current.pgn', 'w'), end='\n\n')
@@ -172,9 +172,9 @@ def main(issue, issue_author, repo_owner):
     # If it is a game over, archive current game
     if gameboard.is_game_over():
         win_msg = {
-            '1/2-1/2': 'It\'s a draw',
-            '1-0': 'White wins',
-            '0-1': 'Black wins'
+            '1/2-1/2': 'Ничья (никто не выиграл, все молодцы)',
+            '1-0': 'Белые победили (как и завещано)',
+            '0-1': 'Чёрные выиграли (тёмная сила рулит)'
         }
 
         with open('data/last_moves.txt', 'r') as last_moves_file:
@@ -183,12 +183,12 @@ def main(issue, issue_author, repo_owner):
             player_list = { re.match(pattern, line).group(1) for line in lines }
 
         if gameboard.result() == '1/2-1/2':
-            issue.add_to_labels('👑 Draw!')
+            issue.add_to_labels('👑 Ничья!')
         else:
-            issue.add_to_labels('👑 Winner!')
+            issue.add_to_labels('👑 Победитель!')
 
         issue.create_comment(settings['comments']['game_over'].format(
-            outcome=win_msg.get(gameboard.result(), 'UNKNOWN'),
+            outcome=win_msg.get(gameboard.result(), 'Неизвестно'),
             players=', '.join(player_list),
             num_moves=len(lines)-1,
             num_players=len(player_list)))
