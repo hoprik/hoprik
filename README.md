@@ -1,22 +1,25 @@
 # Hoprik
 
-I`m hoprik, programmer
+Драсте, мой это профиль на сайте где хранятся репозитории разных IT проектов именуемом «GitHub», представляющем собой специализированную платформу для осуществления деятельности по размещению, версионированию и коллективной разработке исходного кода прикладного и системного программного обеспечения с использованием распределённой системы управления версиями Git (далее по тексту — «Система»). Настоящим подтверждаю факт наличия у меня, субъекта персональных данных, учётной записи в вышеуказанной Системе, созданной в целях, не противоречащих законодательству, а именно: публичной демонстрации результатов интеллектуальной деятельности в области информационных технологий
+
 
 [![wakatime](https://wakatime.com/badge/user/dfcbe794-c409-4097-a53e-aedc2d8b21d6.svg)](https://wakatime.com/@Hoprik)
 ![visotors](https://visitor-badge.laobi.icu/badge?page_id=hoprik.1)
 ![nickname](https://mynickname.com/forum1t4/Hoprik.gif)
 
 ![stats](https://github.com/hoprik/hoprik/blob/main/coding_dashboard.png)
+*Чем чернее квадратик тем хуже моей спене*
+
+
 ![sdvg](https://github.com/hoprik/hoprik/blob/main/video-bez-nazvaniia-sdelano-v-clipchamp-1-min_VzTaPw7F.gif?raw=true)
 
-My socails: [![discord](https://img.icons8.com/nolan/12/1A6DFF/C822FF/discord-logo.png) DISCORD](https://discordapp.com/users/678545337136447501/), [![discord](https://img.icons8.com/nolan/12/1A6DFF/C822FF/telegram-app.png) TELEGRAMM](https://t.me/hoprik),  [![steam](https://img.icons8.com/nolan/12/1A6DFF/C822FF/steam--v1.png) STEAM](https://steamcommunity.com/id/hoprik/)
+Мои сети: [![discord](https://img.icons8.com/nolan/12/1A6DFF/C822FF/discord-logo.png) DISCORD](https://discordapp.com/users/678545337136447501/), [![discord](https://img.icons8.com/nolan/12/1A6DFF/C822FF/telegram-app.png) TELEGRAM](https://t.me/hoprik),  [![steam](https://img.icons8.com/nolan/12/1A6DFF/C822FF/steam--v1.png) STEAM](https://steamcommunity.com/id/hoprik/)
 
-[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&pause=1000&width=435&lines=Hoprik;Programmer;coder;Java⠀fun)](https://hoprik.ru/)
+[![Typing SVG](https://readme-typing-svg.demolab.com/?font=Fira+Code&pause=1000&width=435&lines=%D0%A4%D0%B0%D0%BD%D0%B0%D1%82+Java+(%D0%B1%D0%B5%D0%B7+%D1%81%D0%B5%D1%80%D1%82%D0%B8%D1%84%D0%B8%D0%BA%D0%B0%D1%82%D0%B0);%D0%A4%D0%B0%D0%BD%D0%B0%D1%82+Linux+(2+%D0%B4%D0%B5%D0%BD%D1%8C);%D0%9A%D1%80%D1%83%D1%82%D0%BE%D0%B9+%D1%81+%D0%B0%D0%BD%D0%B8%D0%BC%D0%B0%D1%86%D0%B8%D0%B5%D0%B9+(%D0%BA%D1%80%D1%83%D1%83%D1%83%D1%82%D0%B0);%D0%9A%D1%81%D1%82%D0%B0%D1%82%D0%B8:+%D0%BF%D1%80%D0%BE%D0%B2%D0%B0%D0%BB%D0%B8%D0%BB+Java+(x2);Hoprik+(%D0%BD%D0%B8%D0%BA%D0%B8+%D0%B7%D0%B0%D0%BD%D1%8F%D1%82%D1%8B))](https://hoprik.ru/)
 
 # Chess Game
 
-This is an open chess tournament where ANYONE can play. That's the fun part.  
-It's your turn to play! Move a <!-- BEGIN TURN -->white<!-- END TURN --> piece.
+Украденные шахматы у [marcizhu/readme-chess](https://github.com/marcizhu/readme-chess) ход <!-- BEGIN TURN -->white<!-- END TURN --> .
 
 <!-- BEGIN CHESS BOARD -->
 |   | A | B | C | D | E | F | G | H |   |
@@ -32,7 +35,7 @@ It's your turn to play! Move a <!-- BEGIN TURN -->white<!-- END TURN --> piece.
 |   | **A** | **B** | **C** | **D** | **E** | **F** | **G** | **H** |   |
 <!-- END CHESS BOARD -->
 
-**It's your turn to move! Choose one from the following table**
+**ТВОЯ БУЛКА ХОДИТЬ! ТЫКАЙ В ТАБЛИЦУ ВНИЗУ, НЕ ТУПИ.**
 <!-- BEGIN MOVES LIST -->
 |  FROM  | TO (Just click a link!) |
 | :----: | :---------------------- |
@@ -48,17 +51,17 @@ It's your turn to play! Move a <!-- BEGIN TURN -->white<!-- END TURN --> piece.
 | **H2** | [H3](https://github.com/hoprik/hoprik/issues/new?body=Please+do+not+change+the+title.+Just+click+%22Submit+new+issue%22.+You+don%27t+need+to+do+anything+else+%3AD&title=Chess%3A+Move+H2+to+H3), [H4](https://github.com/hoprik/hoprik/issues/new?body=Please+do+not+change+the+title.+Just+click+%22Submit+new+issue%22.+You+don%27t+need+to+do+anything+else+%3AD&title=Chess%3A+Move+H2+to+H4) |
 <!-- END MOVES LIST -->
 
-Having fun? Ask a friend to do the next move!
+**ВЕСЕЕЕЛО ТЕБЕЕЕЕ????????** Позови друга, пусть тоже пострадает.
 
-#### How it works
+#### Как это работает
 
-When you click on a link and submit a new issue with the desired move, a GitHub action is triggered, which in turn runs a small python script that performs the specified movement, updates this README file and commits the changes.
+Тыкаешь → создаётся issue → GitHub Action (через Python-скрипт) двигает фигуру → README обновляется. Магия 🪄🪄🪄🪄🪄
 
-Have you spotted a bug? Something missing? Feel free to open an [issue](https://github.com/marcizhu/readme-chess/issues) and I will try to fix it as soon as possible :D
+Нашёл баг? Открывай [issue](https://github.com/marcizhu/readme-chess/issues) у настоящего автора. Я тут просто рофлю.
 
-
+**Твой ход, батя! Выбирай клетку из таблицы ниже (или просто тыкай куда попало — я не судья):**
 <details>
-  <summary>Last 5 moves in this game</summary>
+  <summary>5 последних шагов гениев шахмат</summary>
 <!-- BEGIN LAST MOVES -->
 
 | Move | Author |
@@ -73,7 +76,7 @@ Have you spotted a bug? Something missing? Feel free to open an [issue](https://
 </details>
 
 <details>
-  <summary>Top 10 most moves across all games</summary>
+  <summary>Топ 10 гениев сходиаших фигурами в шахматах</summary>
 <!-- BEGIN TOP MOVES -->
 
 | Total moves |  User  |
@@ -93,4 +96,4 @@ Have you spotted a bug? Something missing? Feel free to open an [issue](https://
 
 ---
 
-Author [marcizhu/readme-chess](https://github.com/marcizhu/readme-chess)!
+**Дисклеймер:** весь этот README — не ирония. Если ты не принял его всерьёз, пожалуйста, сходи к врачу за меня.
